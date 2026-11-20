@@ -65,16 +65,7 @@ class WriteBatch:
                     prior = connection.execute("SELECT * FROM receipts WHERE request_key=?", (self.request_key,)).fetchone()
                     if prior:
                         if prior["request_hash"] != fingerprint:
-                            head = int(self.store.get("head"))
-                            equivalent = True
-                            for op in self.operations:
-                                row = latest_row(connection, op["collection"], op["key"], head)
-                                current = loads(row["body"]) if row is not None and row["body"] is not None else None
-                                if current != op["document"]:
-                                    equivalent = False
-                                    break
-                            if not equivalent:
-                                raise Conflict("request key was used with different operations")
+                            raise Conflict("request key was used with different operations")
                         self.state = "committed"
                         return CommitResult(prior["rev"], prior["count"], True)
                 head = int(self.store.get("head"))
